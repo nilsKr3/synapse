@@ -14,8 +14,23 @@
 
 from typing import Any
 
+import attr
+
 from synapse.config._base import Config
 from synapse.types import JsonDict
+
+
+@attr.s(auto_attribs=True, frozen=True, slots=True)
+class MSC3866Config:
+    """Configuration for MSC3866 (mandating approval for new users)"""
+
+    # Whether the base support for the approval process is enabled. This includes the
+    # ability for administrators to check and update the approval of users, even if no
+    # approval is currently required.
+    enabled: bool = False
+    # Whether to require that new users are approved by an admin before their account
+    # can be used. Note that this setting is ignored if 'enabled' is false.
+    require_approval_for_new_accounts: bool = False
 
 
 class ExperimentalConfig(Config):
@@ -90,3 +105,7 @@ class ExperimentalConfig(Config):
 
         # MSC3848: Introduce errcodes for specific event sending failures
         self.msc3848_enabled: bool = experimental.get("msc3848_enabled", False)
+
+        # MSC3866: M_USER_AWAITING_APPROVAL error code
+        raw_msc3866_config = experimental.get("msc3866", {})
+        self.msc3866 = MSC3866Config(**raw_msc3866_config)
